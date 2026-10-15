@@ -1,0 +1,457 @@
+---
+import { ARM, GROUND_Y, JAW_OPEN, REACH, REST_TARGET, VIEW, armFrame, jawTransform, restPose } from '../lib/robot-arm';
+
+interface Props {
+  figure?: string;
+}
+
+const { figure = '0' } = Astro.props;
+const f = armFrame(restPose());
+const { base, l1, l2 } = ARM;
+const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
+---
+
+<figure class="figure arm" data-robot-arm>
+  <svg
+    class="arm__svg"
+    viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.width} ${VIEW.height}`}
+    style={`aspect-ratio: ${VIEW.width} / ${VIEW.height}`}
+    role="img"
+    aria-label="Line drawing of a two-joint robot arm on a pedestal, annotated with its joint angles."
+  >
+    <g class="arm__construction">
+      <path d={`M${base.x - REACH} ${base.y} A${REACH} ${REACH} 0 0 1 ${base.x + REACH} ${base.y}`} class="arm__envelope" />
+      <path d={`M60 ${GROUND_Y} H300`} class="arm__ground" />
+      <path d={hatches.map((x) => `M${x} ${GROUND_Y} l-8 8`).join(' ')} class="arm__hatch" />
+      <path d={`M164 ${GROUND_Y} L170 ${base.y} H190 L196 ${GROUND_Y} Z`} class="arm__pedestal" />
+    </g>
+
+    <g class="arm__annotations">
+      <path d={`M${base.x} ${base.y} H${base.x + 40}`} class="arm__reference" />
+      <path d={f.arc1} class="arm__arc" data-arc="1" />
+      <path d={f.arc2} class="arm__arc" data-arc="2" />
+      <text x={f.label1.x} y={f.label1.y} class="arm__label" data-label="1">θ₁</text>
+      <text x={f.label2.x} y={f.label2.y} class="arm__label" data-label="2">θ₂</text>
+    </g>
+
+    <g class="arm__crosshair" data-crosshair transform={`translate(${REST_TARGET.x} ${REST_TARGET.y})`} visibility="hidden">
+      <circle r="4.5" />
+      <path d="M-11 0 H-6 M6 0 H11 M0 -11 V-6 M0 6 V11" />
+    </g>
+
+    <g class="arm__body">
+      <g data-link="1" transform={f.link1}>
+        <rect x="-9" y="-9" width={l1 + 18} height="18" rx="9" class="arm__link" />
+        <path d={`M0 0 H${l1}`} class="arm__centerline" />
+        <path d={`M${l1} 0 H${l1 + 30}`} class="arm__reference" />
+        <g data-link="2" transform={f.link2}>
+          <rect x="-7" y="-7" width={l2 + 14} height="14" rx="7" class="arm__link" />
+          <path d={`M0 0 H${l2}`} class="arm__centerline" />
+          <g transform={`translate(${l2} 0)`} class="arm__gripper">
+            <rect x="-2" y="-10" width="4" height="20" rx="1" class="arm__palm" />
+            <g data-jaw="upper" transform={jawTransform(JAW_OPEN, -1)}>
+              <path d="M2 -2 H14 L18 1.5" />
+            </g>
+            <g data-jaw="lower" transform={jawTransform(JAW_OPEN, 1)}>
+              <path d="M2 2 H14 L18 -1.5" />
+            </g>
+          </g>
+          <circle r="5" class="arm__joint" />
+          <circle r="1.6" class="arm__pin" />
+        </g>
+        <circle r="5.5" class="arm__joint" />
+        <circle r="1.8" class="arm__pin" />
+      </g>
+    </g>
+  </svg>
+
+  <figcaption class="figure__caption">
+    Fig. {figure} — Two-link arm, analytic inverse kinematics.
+    <span class="arm__hint arm__hint--pointer">Move your cursor; the arm tracks it.</span>
+    <span class="arm__hint arm__hint--touch">Tap or drag to move the arm.</span>
+    <span class="arm__hint arm__hint--reduced">Click or tap to place a target.</span>
+    <span class="arm__readout" aria-hidden="true" data-readout>{f.readout}</span>
+  </figcaption>
+</figure>
+
+<style>
+  .arm__svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (max-width: 55.99rem) {
+    .arm__svg {
+      max-height: 15rem;
+    }
+  }
+
+  .arm__envelope {
+    fill: none;
+    stroke: var(--color-line-faint);
+    stroke-width: 1;
+    stroke-dasharray: 2 5;
+  }
+
+  .arm__ground {
+    stroke: var(--color-text);
+    stroke-width: 1.25;
+  }
+
+  .arm__hatch {
+    stroke: var(--color-line-faint);
+    stroke-width: 1;
+  }
+
+  .arm__pedestal {
+    fill: var(--color-bg);
+    stroke: var(--color-text);
+    stroke-width: 1.25;
+  }
+
+  .arm__reference {
+    stroke: var(--color-line-faint);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+  }
+
+  .arm__arc {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 1;
+  }
+
+  .arm__label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    fill: var(--color-accent);
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+
+  .arm__crosshair {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 1.25;
+  }
+
+  .arm__link {
+    fill: var(--color-bg);
+    stroke: var(--color-text);
+    stroke-width: 1.25;
+  }
+
+  .arm__centerline {
+    stroke: var(--color-line-faint);
+    stroke-width: 1;
+    stroke-dasharray: 8 3 2 3;
+  }
+
+  .arm__gripper path {
+    fill: none;
+    stroke: var(--color-text);
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .arm__palm {
+    fill: var(--color-text);
+  }
+
+  .arm__joint {
+    fill: var(--color-bg);
+    stroke: var(--color-text);
+    stroke-width: 1.25;
+  }
+
+  .arm__pin {
+    fill: var(--color-text);
+  }
+
+  .arm__hint,
+  .arm__readout {
+    display: block;
+  }
+
+  .arm__readout {
+    margin-top: var(--space-1);
+    color: var(--color-accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Hints only make sense once the script is running. */
+  .arm:not([data-ready]) .arm__hint,
+  .arm__hint--touch,
+  .arm__hint--reduced {
+    display: none;
+  }
+
+  @media (hover: none) {
+    .arm[data-ready] .arm__hint--pointer {
+      display: none;
+    }
+    .arm[data-ready] .arm__hint--touch {
+      display: block;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .arm[data-ready] .arm__hint--pointer,
+    .arm[data-ready] .arm__hint--touch {
+      display: none;
+    }
+    .arm[data-ready] .arm__hint--reduced {
+      display: block;
+    }
+  }
+</style>
+
+<script>
+  import { approachAngle, chooseElbow, solveIK, type Elbow, type Point, type Pose } from '../lib/ik';
+  import {
+    ARM,
+    IDLE_WAYPOINTS,
+    JAW_CLOSED,
+    JAW_OPEN,
+    REST_ELBOW,
+    REST_TARGET,
+    armFrame,
+    constrainTarget,
+    isInView,
+    jawTransform,
+    restPose,
+  } from '../lib/robot-arm';
+
+  const IDLE_STEP_MS = 2800;
+  const IDLE_PAUSE_MS = 8000;
+  const GRASP_MS = 380;
+
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
+
+  function mount(root: HTMLElement) {
+    const svg = root.querySelector('svg')!;
+    const link1 = root.querySelector<SVGGElement>('[data-link="1"]')!;
+    const link2 = root.querySelector<SVGGElement>('[data-link="2"]')!;
+    const arc1 = root.querySelector<SVGPathElement>('[data-arc="1"]')!;
+    const arc2 = root.querySelector<SVGPathElement>('[data-arc="2"]')!;
+    const label1 = root.querySelector<SVGTextElement>('[data-label="1"]')!;
+    const label2 = root.querySelector<SVGTextElement>('[data-label="2"]')!;
+    const jawUpper = root.querySelector<SVGGElement>('[data-jaw="upper"]')!;
+    const jawLower = root.querySelector<SVGGElement>('[data-jaw="lower"]')!;
+    const crosshair = root.querySelector<SVGGElement>('[data-crosshair]')!;
+    const readout = root.querySelector<HTMLElement>('[data-readout]')!;
+
+    let pose: Pose = restPose();
+    let goal: Pose = { ...pose };
+    let elbow: Elbow = REST_ELBOW;
+    let jaw = JAW_OPEN;
+    let jawGoal = JAW_OPEN;
+    let frameId = 0;
+    let lastTime = 0;
+    let reaching = false;
+    let dragPointer: number | null = null;
+    let lastTouch = -Infinity;
+    let idleIndex = 0;
+    let idleTimer = 0;
+    let inViewport = false;
+
+    const animated = () => !reducedMotion.matches;
+
+    function render() {
+      const f = armFrame(pose);
+      link1.setAttribute('transform', f.link1);
+      link2.setAttribute('transform', f.link2);
+      arc1.setAttribute('d', f.arc1);
+      arc2.setAttribute('d', f.arc2);
+      label1.setAttribute('x', String(f.label1.x));
+      label1.setAttribute('y', String(f.label1.y));
+      label2.setAttribute('x', String(f.label2.x));
+      label2.setAttribute('y', String(f.label2.y));
+      jawUpper.setAttribute('transform', jawTransform(jaw, -1));
+      jawLower.setAttribute('transform', jawTransform(jaw, 1));
+      readout.textContent = f.readout;
+    }
+
+    function tick(time: number) {
+      const dt = lastTime ? Math.min((time - lastTime) / 1000, 0.05) : 1 / 60;
+      lastTime = time;
+
+      pose = {
+        theta1: approachAngle(pose.theta1, goal.theta1, dt, 9),
+        theta2: pose.theta2 + (goal.theta2 - pose.theta2) * (1 - Math.exp(-9 * dt)),
+      };
+      jaw += (jawGoal - jaw) * (1 - Math.exp(-18 * dt));
+      render();
+
+      const settled =
+        Math.abs(goal.theta1 - pose.theta1) + Math.abs(goal.theta2 - pose.theta2) < 1e-3 && Math.abs(jawGoal - jaw) < 0.02;
+      if (settled) {
+        pose = { ...goal };
+        jaw = jawGoal;
+        render();
+        frameId = 0;
+        lastTime = 0;
+      } else {
+        frameId = requestAnimationFrame(tick);
+      }
+    }
+
+    function update() {
+      if (!animated()) {
+        pose = { ...goal };
+        jaw = jawGoal;
+        render();
+        return;
+      }
+      if (!frameId) frameId = requestAnimationFrame(tick);
+    }
+
+    function setTarget(raw: Point, showCrosshair = true) {
+      const target = constrainTarget(raw);
+      elbow = chooseElbow(target, ARM, elbow);
+      goal = solveIK(target, ARM, elbow);
+      if (showCrosshair && isInView(raw)) {
+        crosshair.setAttribute('transform', `translate(${target.x} ${target.y})`);
+        crosshair.setAttribute('visibility', 'visible');
+      } else {
+        crosshair.setAttribute('visibility', 'hidden');
+      }
+      update();
+    }
+
+    function rest() {
+      setTarget(REST_TARGET, false);
+    }
+
+    function grasp() {
+      jawGoal = JAW_CLOSED;
+      update();
+      window.setTimeout(() => {
+        jawGoal = JAW_OPEN;
+        update();
+      }, GRASP_MS);
+    }
+
+    function toLocal(clientX: number, clientY: number): Point | null {
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return null;
+      const p = new DOMPoint(clientX, clientY).matrixTransform(ctm.inverse());
+      return { x: p.x, y: p.y };
+    }
+
+    function centerOf(el: Element): Point | null {
+      const r = el.getBoundingClientRect();
+      return toLocal(r.left + r.width / 2, r.top + r.height / 2);
+    }
+
+    // Desktop: track the mouse anywhere on the page.
+    window.addEventListener(
+      'pointermove',
+      (e) => {
+        if (e.pointerType === 'touch' || reaching || !animated()) return;
+        const p = toLocal(e.clientX, e.clientY);
+        if (p) setTarget(p);
+      },
+      { passive: true },
+    );
+
+    document.documentElement.addEventListener('mouseleave', () => {
+      if (animated() && !reaching) rest();
+    });
+
+    // Reach for links on hover or keyboard focus.
+    for (const el of document.querySelectorAll('[data-reach]')) {
+      const reach = () => {
+        if (!animated()) return;
+        const p = centerOf(el);
+        if (!p) return;
+        reaching = true;
+        setTarget(p, false);
+      };
+      const release = () => {
+        reaching = false;
+      };
+      el.addEventListener('pointerenter', (e) => {
+        if ((e as PointerEvent).pointerType !== 'touch') reach();
+      });
+      el.addEventListener('pointerleave', release);
+      el.addEventListener('focus', () => {
+        if (el.matches(':focus-visible')) reach();
+      });
+      el.addEventListener('blur', () => {
+        if (!reaching) return;
+        release();
+        if (animated()) rest();
+      });
+    }
+
+    // Direct interaction inside the figure: click or tap to place a target, drag to steer.
+    svg.addEventListener('pointerdown', (e) => {
+      const p = toLocal(e.clientX, e.clientY);
+      if (!p) return;
+      setTarget(p);
+      grasp();
+      if (e.pointerType === 'touch') {
+        lastTouch = performance.now();
+        dragPointer = e.pointerId;
+        try {
+          svg.setPointerCapture(e.pointerId);
+        } catch {
+          // Capture can fail if the pointer is already gone; dragging just stops at the figure edge.
+        }
+      }
+    });
+
+    svg.addEventListener('pointermove', (e) => {
+      if (e.pointerId !== dragPointer) return;
+      lastTouch = performance.now();
+      const p = toLocal(e.clientX, e.clientY);
+      if (p) setTarget(p);
+    });
+
+    const endDrag = (e: PointerEvent) => {
+      if (e.pointerId === dragPointer) dragPointer = null;
+    };
+    svg.addEventListener('pointerup', endDrag);
+    svg.addEventListener('pointercancel', endDrag);
+
+    // Touch devices have no hover, so the arm idles through a few waypoints while visible.
+    function idleStep() {
+      if (dragPointer !== null || performance.now() - lastTouch < IDLE_PAUSE_MS) return;
+      idleIndex = (idleIndex + 1) % IDLE_WAYPOINTS.length;
+      setTarget(IDLE_WAYPOINTS[idleIndex]);
+    }
+
+    function syncIdle() {
+      const shouldIdle = inViewport && document.visibilityState === 'visible' && !finePointer.matches && animated();
+      if (shouldIdle && !idleTimer) {
+        idleTimer = window.setInterval(idleStep, IDLE_STEP_MS);
+      } else if (!shouldIdle && idleTimer) {
+        window.clearInterval(idleTimer);
+        idleTimer = 0;
+      }
+    }
+
+    new IntersectionObserver(([entry]) => {
+      inViewport = entry.isIntersecting;
+      syncIdle();
+    }).observe(root);
+    document.addEventListener('visibilitychange', syncIdle);
+    finePointer.addEventListener('change', syncIdle);
+    reducedMotion.addEventListener('change', () => {
+      syncIdle();
+      rest();
+    });
+
+    root.setAttribute('data-ready', '');
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-robot-arm]').forEach(mount);
+</script>

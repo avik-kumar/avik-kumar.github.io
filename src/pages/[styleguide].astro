@@ -2,6 +2,7 @@
 import { Code } from 'astro:components';
 import { render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionHeading from '../components/SectionHeading.astro';
 import { getProjects, formatDateRange } from '../lib/projects';
 import { PROJECT_CATEGORIES, PROJECT_STATUSES } from '../lib/taxonomy';
 
@@ -22,6 +23,7 @@ const colors = [
   'text-subtle',
   'border',
   'border-strong',
+  'line-faint',
   'accent',
   'accent-hover',
   'accent-soft',
@@ -64,7 +66,7 @@ const snippet = `def puct_score(child, parent_visits, c_puct=1.5):
             <div class="type-row">
               <span class="meta">{size}</span>
               <span style={`font-size: var(--text-${size}); line-height: var(--leading-tight)`}>
-                Learning-guided search for solver strategies
+                <span style="font-family: var(--font-serif)">Learning-guided search</span> for solver strategies
               </span>
             </div>
           ))
@@ -85,8 +87,14 @@ const snippet = `def puct_score(child, parent_visits, c_puct=1.5):
       <div class="row">
         <a class="button button--primary" href="#">Primary action</a>
         <a class="button" href="#">Secondary action</a>
+        <a class="link-underline" href="#">Quiet action</a>
         <a href="#">Inline text link</a>
       </div>
+    </section>
+
+    <section>
+      <h2 class="meta">Section heading</h2>
+      <SectionHeading n="01" title="Selected work" level={3} />
     </section>
 
     <section>

@@ -1,91 +1,75 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SocialLinks from '../components/SocialLinks.astro';
-import Icon from '../components/Icon.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import RobotArm from '../components/RobotArm.astro';
 import { site } from '../site.config';
 import { withBase } from '../lib/url';
 
-const roles = [
-  { title: 'Robotics & RL Research Assistant', org: 'Ha Lab, Georgia Tech' },
-  { title: 'SMT Solver Research Assistant', org: 'ML for Logic @ Georgia Tech' },
-  { title: 'Data Subteam Lead', org: 'Georgia Tech Solar Racing' },
+const now = [
+  { role: 'Robotics & RL Research Assistant', org: 'Ha Lab, Georgia Tech', since: 'Since Jan 2026' },
+  { role: 'SMT Solver Research Assistant', org: 'ML for Logic @ Georgia Tech', since: 'Since Nov 2025' },
+  { role: 'Data Subteam Lead', org: 'Georgia Tech Solar Racing', since: 'Member since Aug 2025' },
+  { role: 'B.S. Computer Science', org: 'Intelligence · Modeling & Simulation', since: 'Expected May 2028' },
 ];
 ---
 
 <BaseLayout>
   <section class="hero container" aria-labelledby="hero-title">
-    <div class="hero__main">
+    <div class="hero__text">
       <p class="meta">Computer Science · Georgia Tech</p>
-      <h1 id="hero-title" class="hero__title">Building intelligent systems, from algorithms to implementation.</h1>
+      <h1 id="hero-title" class="hero__title">
+        Building intelligent systems, from algorithms to <em>implementation</em>.
+      </h1>
       <p class="hero__lede">
         I'm Avik Kumar, a Computer Science student at Georgia Tech. I build teleoperation and data-collection
         infrastructure for humanoid robot learning at Ha Lab, research learning-guided strategy search for the Z3 SMT
         solver, and lead the data and software team at Georgia Tech Solar Racing.
       </p>
       <div class="hero__actions">
-        <a class="button button--primary" href={withBase(site.resume)} target="_blank" rel="noopener">
-          Résumé
-          <Icon name="arrow-up-right" size={14} />
-          <span class="visually-hidden">(PDF, opens in a new tab)</span>
+        <a class="button button--primary" href={withBase(site.resume)} target="_blank" rel="noopener" data-reach>
+          Résumé ↗<span class="visually-hidden"> (PDF, opens in a new tab)</span>
         </a>
         <SocialLinks variant="text" />
       </div>
     </div>
 
-    <aside class="hero__aside" aria-label="At a glance">
-      <dl class="facts">
-        <div>
-          <dt class="meta">Currently</dt>
-          <dd>
-            <ul class="facts__roles">
-              {
-                roles.map((role) => (
-                  <li>
-                    {role.title}
-                    <span>{role.org}</span>
-                  </li>
-                ))
-              }
-            </ul>
-          </dd>
-        </div>
-        <div>
-          <dt class="meta">Studying</dt>
-          <dd>
-            B.S. Computer Science
-            <span>Intelligence · Modeling &amp; Simulation</span>
-          </dd>
-        </div>
-        <div>
-          <dt class="meta">Graduating</dt>
-          <dd>May 2028</dd>
-        </div>
-        <div>
-          <dt class="meta">Based in</dt>
-          <dd>{site.location}</dd>
-        </div>
-      </dl>
-    </aside>
+    <div class="hero__figure">
+      <RobotArm />
+    </div>
+  </section>
+
+  <section class="container now" aria-labelledby="now-title">
+    <SectionHeading n="01" title="Now" id="now-title" />
+    <ul class="now__list">
+      {
+        now.map((item) => (
+          <li class="now__item">
+            <span class="now__role">{item.role}</span>
+            <span class="now__org">{item.org}</span>
+            <span class="now__since meta">{item.since}</span>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="now__location meta">Based in {site.location}</p>
   </section>
 </BaseLayout>
 
 <style>
   .hero {
     display: grid;
-    gap: var(--space-7);
-    padding-block: var(--space-8) var(--space-7);
+    gap: var(--space-6);
+    padding-block: var(--space-7) var(--space-8);
   }
 
   @media (min-width: 56rem) {
     .hero {
-      grid-template-columns: minmax(0, 1fr) 17rem;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      align-items: center;
       gap: var(--space-8);
-      padding-block: var(--space-9) var(--space-8);
+      padding-block: var(--space-8) var(--space-9);
     }
-  }
-
-  .hero__main {
-    max-width: 44rem;
   }
 
   .hero__title {
@@ -97,6 +81,7 @@ const roles = [
     margin-top: var(--space-5);
     max-width: var(--width-prose);
     font-size: var(--text-lg);
+    line-height: 1.6;
     color: var(--color-text-muted);
   }
 
@@ -108,43 +93,56 @@ const roles = [
     margin-top: var(--space-6);
   }
 
-  .hero__aside {
-    align-self: end;
-    padding-top: var(--space-5);
-    border-top: 1px solid var(--color-border);
+  .hero__figure {
+    max-width: 30rem;
   }
 
-  @media (min-width: 56rem) {
-    .hero__aside {
-      padding-top: 0;
-      padding-left: var(--space-5);
-      border-top: 0;
-      border-left: 1px solid var(--color-border);
+  @media (max-width: 55.99rem) {
+    .hero__figure {
+      max-width: none;
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--color-border);
     }
   }
 
-  .facts {
-    display: grid;
-    gap: var(--space-5);
-    margin: 0;
-    font-size: var(--text-sm);
-    line-height: var(--leading-snug);
-  }
-
-  .facts dd {
-    margin: var(--space-2) 0 0;
-  }
-
-  .facts dd span {
-    display: block;
-    color: var(--color-text-muted);
-  }
-
-  .facts__roles {
-    display: grid;
-    gap: var(--space-3);
+  .now__list {
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+
+  .now__item {
+    display: grid;
+    gap: var(--space-1) var(--space-5);
+    padding-block: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  @media (min-width: 48rem) {
+    .now__item {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 11rem;
+      align-items: baseline;
+    }
+  }
+
+  .now__role {
+    font-family: var(--font-serif);
+    font-size: 1.1875rem;
+    line-height: 1.3;
+  }
+
+  .now__org {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 48rem) {
+    .now__since {
+      text-align: right;
+    }
+  }
+
+  .now__location {
+    margin-top: var(--space-4);
   }
 </style>

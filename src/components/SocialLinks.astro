@@ -25,6 +25,7 @@ const links = [
           href={link.href}
           aria-label={variant === 'icons' ? link.label : undefined}
           title={variant === 'icons' ? link.label : undefined}
+          data-reach
           {...(link.href.startsWith('http') ? { rel: 'me noopener', target: '_blank' } : {})}
         >
           <Icon name={link.icon} size={variant === 'icons' ? 17 : 15} />

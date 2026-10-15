@@ -12,9 +12,8 @@ const isCurrent = (href: string) => {
 
 <header class="site-header">
   <div class="container site-header__inner">
-    <a class="wordmark" href={withBase('/')} aria-label={`${site.name}, home`}>
-      <span class="wordmark__mark" aria-hidden="true">AK</span>
-      <span class="wordmark__name">{site.name}</span>
+    <a class="wordmark" href={withBase('/')} aria-label={`${site.name}, home`} data-reach>
+      {site.name}
     </a>
 
     <nav class="site-nav" aria-label="Primary">
@@ -25,6 +24,7 @@ const isCurrent = (href: string) => {
               <a
                 href={withBase(item.href)}
                 aria-current={isCurrent(item.href) ? 'page' : undefined}
+                data-reach
                 {...(item.newTab ? { target: '_blank', rel: 'noopener' } : {})}
               >
                 {item.label}
@@ -40,52 +40,26 @@ const isCurrent = (href: string) => {
 </header>
 
 <style>
-  .site-header {
-    border-bottom: 1px solid var(--color-border);
-  }
-
   .site-header__inner {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
     gap: var(--space-3) var(--space-5);
-    padding-block: var(--space-4);
+    padding-block: var(--space-5) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .wordmark {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-3);
-    color: var(--color-text);
-    font-weight: 600;
+    font-family: var(--font-serif);
+    font-size: 1.3125rem;
     letter-spacing: -0.01em;
+    color: var(--color-text);
     text-decoration: none;
   }
 
   .wordmark:hover {
-    color: var(--color-text);
-  }
-
-  .wordmark__mark {
-    display: grid;
-    place-items: center;
-    width: 1.875rem;
-    height: 1.875rem;
-    border: 1px solid var(--color-text);
-    border-radius: var(--radius);
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    transition:
-      background-color var(--duration) var(--ease),
-      color var(--duration) var(--ease);
-  }
-
-  .wordmark:hover .wordmark__mark {
-    background: var(--color-text);
-    color: var(--color-bg);
+    color: var(--color-accent);
   }
 
   .site-nav {
@@ -103,7 +77,6 @@ const isCurrent = (href: string) => {
     padding: 0;
     list-style: none;
     font-size: var(--text-sm);
-    font-weight: 500;
   }
 
   .site-nav__links a {
@@ -119,8 +92,8 @@ const isCurrent = (href: string) => {
   .site-nav__links a[aria-current='page'] {
     text-decoration: underline;
     text-decoration-color: var(--color-accent);
-    text-decoration-thickness: 2px;
-    text-underline-offset: 0.45em;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.4em;
   }
 
   .site-nav :global(.site-nav__social) {

@@ -4,36 +4,39 @@
 
 :root {
   /* Color — all text colors meet WCAG AA on --color-bg */
-  --color-bg: #f8f7f4;
-  --color-surface: #f0eee9;
-  --color-text: #1b1b1a;
-  --color-text-muted: #5c5b57;
-  --color-text-subtle: #6b6a65;
-  --color-border: #e3e0d9;
-  --color-border-strong: #cdc9bf;
-  --color-accent: #1f4fa8;
-  --color-accent-hover: #173d84;
-  --color-accent-soft: #e4eaf6;
+  --color-bg: #f6f4ee;
+  --color-surface: #eeebe3;
+  --color-text: #1c1b19;
+  --color-text-muted: #5f5c55;
+  --color-text-subtle: #6e6a62;
+  --color-border: #dcd8ce;
+  --color-border-strong: #c9c4b8;
+  /* Decorative strokes only; too light for text. */
+  --color-line-faint: #b9b4a8;
+  --color-accent: #2a4fa0;
+  --color-accent-hover: #1f3c7c;
+  --color-accent-soft: #e2e7f2;
   --color-on-accent: #ffffff;
 
   /* Typography */
-  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Newsreader Variable', 'Iowan Old Style', Georgia, serif;
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
-  --text-base: 1.0625rem;
-  --text-lg: 1.1875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
   --text-xl: 1.5rem;
   --text-2xl: clamp(1.75rem, 1.45rem + 1.2vw, 2.125rem);
-  --text-3xl: clamp(2.125rem, 1.6rem + 2.4vw, 3.125rem);
+  --text-3xl: clamp(2.25rem, 1.7rem + 2.5vw, 3.25rem);
 
-  --leading-tight: 1.15;
+  --leading-tight: 1.12;
   --leading-snug: 1.35;
   --leading-normal: 1.65;
 
-  --tracking-tight: -0.022em;
-  --tracking-meta: 0.06em;
+  --tracking-tight: -0.012em;
+  --tracking-meta: 0.07em;
 
   /* Spacing */
   --space-1: 0.25rem;
@@ -108,10 +111,24 @@ h2,
 h3,
 h4 {
   margin: 0;
-  font-weight: 600;
   line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
   text-wrap: balance;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: var(--tracking-tight);
+}
+
+h4 {
+  font-weight: 600;
+}
+
+:is(h1, h2, h3) em {
+  color: var(--color-accent);
 }
 
 p,
@@ -271,15 +288,43 @@ hr {
 }
 
 .button--primary {
+  background: var(--color-text);
+  border-color: var(--color-text);
+  color: var(--color-bg);
+}
+
+.button--primary:hover {
   background: var(--color-accent);
   border-color: var(--color-accent);
   color: var(--color-on-accent);
 }
 
-.button--primary:hover {
-  background: var(--color-accent-hover);
-  border-color: var(--color-accent-hover);
-  color: var(--color-on-accent);
+/* Quiet text action: ink text with a solid underline that shifts to the accent on hover. */
+.link-underline {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-decoration-color: var(--color-text);
+  text-underline-offset: 0.3em;
+}
+
+.link-underline:hover {
+  color: var(--color-accent);
+}
+
+.figure {
+  margin: 0;
+}
+
+/* "Fig. N — …" captions under diagrams and interactive figures. */
+.figure__caption {
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.55;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
 }
 
 /* ==========================================================================
@@ -299,13 +344,13 @@ hr {
 }
 
 .prose h2 {
-  margin-top: 2.4em;
-  font-size: var(--text-xl);
+  margin-top: 2.2em;
+  font-size: 1.625rem;
 }
 
 .prose h3 {
-  margin-top: 1.9em;
-  font-size: var(--text-lg);
+  margin-top: 1.8em;
+  font-size: 1.25rem;
 }
 
 .prose h2 + *,
