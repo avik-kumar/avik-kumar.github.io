@@ -1,0 +1,57 @@
+---
+import { site } from '../site.config';
+import { withBase } from '../lib/url';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <p class="meta">© {year} {site.name} · {site.location}</p>
+    <ul class="site-footer__links">
+      <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+      <li><a href={site.github} rel="me noopener" target="_blank">GitHub</a></li>
+      <li><a href={site.linkedin} rel="me noopener" target="_blank">LinkedIn</a></li>
+      <li>
+        <a href={withBase(site.resume)} target="_blank" rel="noopener">
+          Résumé<span class="visually-hidden"> (PDF, opens in a new tab)</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: var(--space-9);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .site-footer__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-6);
+    padding-block: var(--space-6);
+  }
+
+  .site-footer__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+  }
+
+  .site-footer__links a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+
+  .site-footer__links a:hover {
+    color: var(--color-accent);
+  }
+</style>

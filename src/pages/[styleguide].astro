@@ -1,0 +1,227 @@
+---
+import { Code } from 'astro:components';
+import { render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getProjects, formatDateRange } from '../lib/projects';
+import { PROJECT_CATEGORIES, PROJECT_STATUSES } from '../lib/taxonomy';
+
+/** Dev-only design reference at /styleguide/; never generated in production builds. */
+export function getStaticPaths() {
+  return import.meta.env.DEV ? [{ params: { styleguide: 'styleguide' } }] : [];
+}
+
+const projects = await getProjects();
+const sample = projects[0];
+const SampleContent = sample ? (await render(sample)).Content : null;
+
+const colors = [
+  'bg',
+  'surface',
+  'text',
+  'text-muted',
+  'text-subtle',
+  'border',
+  'border-strong',
+  'accent',
+  'accent-hover',
+  'accent-soft',
+];
+
+const sizes = ['3xl', '2xl', 'xl', 'lg', 'base', 'sm', 'xs'];
+
+const snippet = `def puct_score(child, parent_visits, c_puct=1.5):
+    """Selection score combining value estimate and prior."""
+    exploration = c_puct * child.prior * parent_visits ** 0.5 / (1 + child.visits)
+    return child.mean_value + exploration`;
+---
+
+<BaseLayout title="Style guide" noindex>
+  <div class="container guide">
+    <header>
+      <p class="meta">Dev only · not built in production</p>
+      <h1>Style guide</h1>
+    </header>
+
+    <section>
+      <h2 class="meta">Color</h2>
+      <ul class="swatches">
+        {
+          colors.map((name) => (
+            <li>
+              <span class="swatch" style={`background: var(--color-${name})`} />
+              <code>--color-{name}</code>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="meta">Type scale</h2>
+      <div class="type-scale">
+        {
+          sizes.map((size) => (
+            <div class="type-row">
+              <span class="meta">{size}</span>
+              <span style={`font-size: var(--text-${size}); line-height: var(--leading-tight)`}>
+                Learning-guided search for solver strategies
+              </span>
+            </div>
+          ))
+        }
+      </div>
+      <div class="type-row">
+        <span class="meta">mono</span>
+        <span style="font-family: var(--font-mono); font-size: var(--text-sm)">z3.Tactic('simplify') → 'solve-eqs' → 'smt'</span>
+      </div>
+      <div class="type-row">
+        <span class="meta">meta</span>
+        <span class="meta">Robotics · Aug 2025 – Present · Active</span>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="meta">Actions &amp; links</h2>
+      <div class="row">
+        <a class="button button--primary" href="#">Primary action</a>
+        <a class="button" href="#">Secondary action</a>
+        <a href="#">Inline text link</a>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="meta">Project entry (from content collection)</h2>
+      {
+        sample ? (
+          <article class="entry">
+            <p class="meta">
+              {sample.data.categories.map((c) => PROJECT_CATEGORIES[c]).join(' · ')} ·{' '}
+              {formatDateRange(sample.data.startDate, sample.data.endDate)} · {PROJECT_STATUSES[sample.data.status]}
+              {sample.data.draft && ' · Draft'}
+            </p>
+            <h3>{sample.data.title}</h3>
+            <p class="entry__summary">{sample.data.summary}</p>
+            <p class="entry__role">{[sample.data.role, sample.data.organization].filter(Boolean).join(', ')}</p>
+            <ul class="entry__tech meta">
+              {sample.data.technologies.map((t) => (
+                <li>{t}</li>
+              ))}
+            </ul>
+          </article>
+        ) : (
+          <p>No projects in the collection.</p>
+        )
+      }
+    </section>
+
+    <section>
+      <h2 class="meta">Prose</h2>
+      <div class="prose">
+        {SampleContent && <SampleContent />}
+        <h3>Code and quotation</h3>
+        <p>
+          Inline code such as <code>Tactic('smt')</code> sits in running text. Longer listings scroll horizontally on narrow
+          screens instead of overflowing the page.
+        </p>
+        <Code code={snippet} lang="python" theme="github-light" />
+        <blockquote>
+          <p>Blockquotes are reserved for cited material, not for decoration.</p>
+        </blockquote>
+        <table>
+          <thead>
+            <tr><th>Selection rule</th><th>Uses prior</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>UCT</td><td>No</td><td>Baseline</td></tr>
+            <tr><td>PUCT</td><td>Yes</td><td>Example row</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .guide {
+    display: grid;
+    gap: var(--space-8);
+    padding-block: var(--space-8);
+  }
+
+  .guide h1 {
+    margin-top: var(--space-3);
+    font-size: var(--text-2xl);
+  }
+
+  .guide section > h2 {
+    margin-bottom: var(--space-5);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-xs);
+  }
+
+  .swatch {
+    display: block;
+    height: 3.5rem;
+    margin-bottom: var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+  }
+
+  .type-scale {
+    display: grid;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+  }
+
+  .type-row {
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    align-items: baseline;
+    gap: var(--space-4);
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .entry {
+    max-width: var(--width-prose);
+  }
+
+  .entry h3 {
+    margin-top: var(--space-2);
+    font-size: var(--text-xl);
+  }
+
+  .entry__summary {
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+  }
+
+  .entry__role {
+    margin-top: var(--space-2);
+    font-size: var(--text-sm);
+  }
+
+  .entry__tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>
