@@ -1,0 +1,108 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import { PROJECT_CATEGORIES } from '../../lib/taxonomy';
+import { formatDateRange, getProjects } from '../../lib/projects';
+import { withBase } from '../../lib/url';
+
+const projects = await getProjects();
+---
+
+<BaseLayout title="Work" description="Projects in robotics, formal methods, and software systems.">
+  <section class="container page" aria-labelledby="work-title">
+    <SectionHeading n="01" title="Work" id="work-title" />
+    <p class="page__lede">
+      Research, team software, and independent tools — from humanoid teleoperation to SMT strategy search.
+    </p>
+
+    {
+      projects.length === 0 ? (
+        <p class="page__empty">Project write-ups are on the way.</p>
+      ) : (
+        <ul class="work-list">
+          {projects.map((project) => {
+            const primary = project.data.categories[0];
+            return (
+              <li class="work-list__item">
+                <a class="work-list__link" href={withBase(`/work/${project.id}/`)}>
+                  <span class="work-list__title">{project.data.title}</span>
+                  <span class="work-list__summary">{project.data.summary}</span>
+                  <span class="work-list__meta meta">
+                    {[
+                      project.data.role,
+                      formatDateRange(project.data.startDate, project.data.endDate),
+                      PROJECT_CATEGORIES[primary],
+                    ].join(' · ')}
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .page {
+    padding-block: var(--space-7) var(--space-9);
+  }
+
+  .page__lede {
+    max-width: var(--width-prose);
+    margin: var(--space-4) 0 0;
+    font-size: var(--text-lg);
+    line-height: 1.6;
+    color: var(--color-text-muted);
+  }
+
+  .page__empty {
+    margin-top: var(--space-6);
+    color: var(--color-text-muted);
+  }
+
+  .work-list {
+    margin: var(--space-7) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .work-list__item {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .work-list__item:first-child {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .work-list__link {
+    display: grid;
+    gap: var(--space-2);
+    padding-block: var(--space-5);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .work-list__link:hover .work-list__title {
+    color: var(--color-accent);
+  }
+
+  .work-list__title {
+    font-family: var(--font-serif);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    transition: color var(--duration) var(--ease);
+  }
+
+  .work-list__summary {
+    max-width: var(--width-prose);
+    font-size: var(--text-base);
+    line-height: 1.55;
+    color: var(--color-text-muted);
+  }
+
+  .work-list__meta {
+    margin-top: var(--space-1);
+  }
+</style>

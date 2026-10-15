@@ -1,0 +1,185 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import { site } from '../../site.config';
+import { withBase } from '../../lib/url';
+
+const education = {
+  school: 'Georgia Institute of Technology',
+  degree: 'B.S. Computer Science',
+  threads: 'Intelligence · Modeling & Simulation',
+  graduation: 'Expected May 2028',
+  gpa: '4.00',
+};
+
+const roles = [
+  { role: 'Robotics & RL Research Assistant', org: 'Ha Lab' },
+  { role: 'SMT Solver Research Assistant', org: 'ML for Logic' },
+  { role: 'Data Subteam Lead', org: 'Georgia Tech Solar Racing' },
+];
+---
+
+<BaseLayout title="About" description={`About ${site.name}, a Computer Science student at Georgia Tech.`}>
+  <section class="container page" aria-labelledby="about-title">
+    <SectionHeading n="01" title="About" id="about-title" />
+
+    <div class="about">
+      <div class="about__copy">
+        <p class="about__lede">
+          I'm Avik Kumar, a Computer Science student at Georgia Tech. I work across robotics research, learning-guided
+          formal methods, and race-day data systems — usually somewhere between algorithms and the infrastructure that
+          makes them run.
+        </p>
+        <p>
+          At Ha Lab I build teleoperation and data-collection tooling for humanoid robot learning. With ML for Logic I
+          work on strategy search for SMT solving. On Georgia Tech Solar Racing I lead the data subteam behind
+          telemetry, simulation, and race strategy software.
+        </p>
+        <p>
+          For project write-ups, see <a class="link-underline" href={withBase('/work/')}>Work</a>. Reach me through the
+          links in the footer.
+        </p>
+      </div>
+
+      <figure class="about__figure figure" data-about-photo>
+        <!-- Photo added in the content commit -->
+      </figure>
+    </div>
+
+    <section class="about-block" aria-labelledby="education-title">
+      <SectionHeading n="02" title="Education" id="education-title" level={3} />
+      <dl class="about-facts">
+        <div>
+          <dt class="meta">School</dt>
+          <dd>{education.school}</dd>
+        </div>
+        <div>
+          <dt class="meta">Degree</dt>
+          <dd>{education.degree}</dd>
+        </div>
+        <div>
+          <dt class="meta">Threads</dt>
+          <dd>{education.threads}</dd>
+        </div>
+        <div>
+          <dt class="meta">Graduation</dt>
+          <dd>{education.graduation}</dd>
+        </div>
+        <div>
+          <dt class="meta">GPA</dt>
+          <dd>{education.gpa}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="about-block" aria-labelledby="roles-title">
+      <SectionHeading n="03" title="Currently" id="roles-title" level={3} />
+      <ul class="about-roles">
+        {
+          roles.map((item) => (
+            <li>
+              <span class="about-roles__role">{item.role}</span>
+              <span class="meta">{item.org}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </section>
+</BaseLayout>
+
+<style>
+  .page {
+    padding-block: var(--space-7) var(--space-9);
+  }
+
+  .about {
+    display: grid;
+    gap: var(--space-6);
+    margin-top: var(--space-5);
+  }
+
+  @media (min-width: 48rem) {
+    .about {
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr);
+      align-items: start;
+      gap: var(--space-8);
+    }
+  }
+
+  .about__copy {
+    max-width: var(--width-prose);
+  }
+
+  .about__lede {
+    font-size: var(--text-lg);
+    line-height: 1.6;
+    color: var(--color-text-muted);
+  }
+
+  .about__copy p + p {
+    margin-top: var(--space-4);
+    line-height: var(--leading-normal);
+    color: var(--color-text-muted);
+  }
+
+  .about__figure:empty {
+    display: none;
+  }
+
+  .about-block {
+    margin-top: var(--space-8);
+  }
+
+  .about-facts {
+    display: grid;
+    gap: var(--space-4);
+    margin: var(--space-5) 0 0;
+  }
+
+  @media (min-width: 40rem) {
+    .about-facts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .about-facts div {
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .about-facts dt {
+    margin-bottom: var(--space-1);
+  }
+
+  .about-facts dd {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+  }
+
+  .about-roles {
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .about-roles li {
+    display: grid;
+    gap: var(--space-1);
+    padding-block: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  @media (min-width: 40rem) {
+    .about-roles li {
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      align-items: baseline;
+    }
+  }
+
+  .about-roles__role {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+  }
+</style>

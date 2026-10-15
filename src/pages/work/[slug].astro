@@ -1,0 +1,128 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { PROJECT_CATEGORIES } from '../../lib/taxonomy';
+import { formatDateRange, getProjects } from '../../lib/projects';
+import { withBase } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+const { title, summary, role, organization, startDate, endDate, categories, technologies, links } = project.data;
+const primary = categories[0];
+---
+
+<BaseLayout title={title} description={summary}>
+  <article class="container page">
+    <p class="meta">
+      <a class="page__back" href={withBase('/work/')}>Work</a>
+      <span aria-hidden="true"> / </span>
+      {PROJECT_CATEGORIES[primary]}
+    </p>
+
+    <header class="project-header">
+      <h1 class="project-header__title">{title}</h1>
+      <p class="project-header__summary">{summary}</p>
+      <dl class="project-header__facts">
+        <div>
+          <dt class="visually-hidden">Role</dt>
+          <dd>{[role, organization].filter(Boolean).join(', ')}</dd>
+        </div>
+        <div>
+          <dt class="visually-hidden">Dates</dt>
+          <dd class="meta">{formatDateRange(startDate, endDate)}</dd>
+        </div>
+        {
+          technologies.length > 0 && (
+            <div>
+              <dt class="visually-hidden">Technologies</dt>
+              <dd class="meta">{technologies.join(' · ')}</dd>
+            </div>
+          )
+        }
+      </dl>
+      {
+        links.length > 0 && (
+          <ul class="project-header__links">
+            {links.map((link) => (
+              <li>
+                <a class="link-underline" href={link.href} target="_blank" rel="noopener">
+                  {link.label} ↗
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </header>
+
+    <div class="prose project-body">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .page {
+    padding-block: var(--space-7) var(--space-9);
+  }
+
+  .page__back {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .page__back:hover {
+    color: var(--color-accent);
+  }
+
+  .project-header {
+    margin-top: var(--space-4);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid var(--color-text);
+  }
+
+  .project-header__title {
+    font-size: var(--text-3xl);
+    max-width: 22ch;
+  }
+
+  .project-header__summary {
+    margin-top: var(--space-4);
+    max-width: var(--width-prose);
+    font-size: var(--text-lg);
+    line-height: 1.6;
+    color: var(--color-text-muted);
+  }
+
+  .project-header__facts {
+    display: grid;
+    gap: var(--space-2);
+    margin: var(--space-5) 0 0;
+  }
+
+  .project-header__facts dd {
+    margin: 0;
+  }
+
+  .project-header__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-5);
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .project-body {
+    margin-top: var(--space-7);
+    max-width: var(--width-prose);
+  }
+</style>
