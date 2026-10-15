@@ -2,13 +2,22 @@ import { forwardKinematics, solveIK, type ArmGeometry, type Elbow, type Point, t
 
 /** Shared by the build-time render and the client script so both draw the same arm. */
 export const VIEW = { x: 0, y: 50, width: 360, height: 222 };
-export const ARM: ArmGeometry = { base: { x: 180, y: 236 }, l1: 96, l2: 78 };
+export const ARM: ArmGeometry = { base: { x: 180, y: 236 }, l1: 88, l2: 68, l3: 28 };
 export const GROUND_Y = 250;
-export const REACH = (ARM.l1 + ARM.l2) * 0.97;
+export const REACH = (ARM.l1 + ARM.l2 + ARM.l3) * 0.97;
 export const REST_TARGET: Point = { x: 250, y: 118 };
 export const REST_ELBOW: Elbow = 1;
 export const JAW_OPEN = 5;
 export const JAW_CLOSED = 1.4;
+
+export const BOX_SIZE = 14;
+export const BOX_HALF = BOX_SIZE / 2;
+/** Initial box resting on the ground, to the right of the pedestal. */
+export const BOX_REST: Point = { x: 268, y: GROUND_Y - BOX_HALF };
+export const BOX_GRASP_RADIUS = 22;
+export const BOX_G = 520;
+export const BOX_FRICTION = 4;
+export const BOX_BOUNCE = 0.18;
 
 /** Waypoints for the idle cycle on touch devices. */
 export const IDLE_WAYPOINTS: Point[] = [
@@ -39,6 +48,7 @@ const signed = (v: number) => `${v < 0 ? '−' : ''}${Math.abs(v).toFixed(1)}`;
 export interface ArmFrame {
   link1: string;
   link2: string;
+  link3: string;
   arc1: string;
   arc2: string;
   label1: Point;
@@ -48,9 +58,9 @@ export interface ArmFrame {
 
 /** SVG attribute values for a pose. Displayed angles use the math convention (counter-clockwise positive). */
 export function armFrame(pose: Pose): ArmFrame {
-  const { base, l1 } = ARM;
+  const { base, l1, l2 } = ARM;
   const { elbow } = forwardKinematics(pose, ARM);
-  const { theta1, theta2 } = pose;
+  const { theta1, theta2, theta3 } = pose;
 
   const r1 = 30;
   const arc1 =
@@ -69,12 +79,21 @@ export function armFrame(pose: Pose): ArmFrame {
   return {
     link1: `translate(${base.x} ${base.y}) rotate(${n(deg(theta1))})`,
     link2: `translate(${l1} 0) rotate(${n(deg(theta2))})`,
+    link3: `translate(${l2} 0) rotate(${n(deg(theta3))})`,
     arc1,
     arc2,
     label1: { x: n(base.x + 46 * Math.cos(mid1)), y: n(base.y + 46 * Math.sin(mid1)) },
     label2: { x: n(elbow.x + 34 * Math.cos(mid2)), y: n(elbow.y + 34 * Math.sin(mid2)) },
-    readout: `θ₁ ${signed(-deg(theta1))}° · θ₂ ${signed(-deg(theta2))}°`,
+    readout: `θ₁ ${signed(-deg(theta1))}° · θ₂ ${signed(-deg(theta2))}° · θ₃ ${signed(-deg(theta3))}°`,
   };
 }
 
 export const jawTransform = (gap: number, side: 1 | -1) => `translate(0 ${n(side * gap)})`;
+
+export function tipOf(pose: Pose): Point {
+  return forwardKinematics(pose, ARM).tip;
+}
+
+export function boxNearTip(box: Point, tip: Point, radius = BOX_GRASP_RADIUS): boolean {
+  return Math.hypot(box.x - tip.x, box.y - tip.y) <= radius;
+}

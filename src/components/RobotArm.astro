@@ -1,5 +1,18 @@
 ---
-import { ARM, GROUND_Y, JAW_OPEN, REACH, REST_TARGET, VIEW, armFrame, jawTransform, restPose } from '../lib/robot-arm';
+import {
+  ARM,
+  BOX_HALF,
+  BOX_REST,
+  BOX_SIZE,
+  GROUND_Y,
+  JAW_OPEN,
+  REACH,
+  REST_TARGET,
+  VIEW,
+  armFrame,
+  jawTransform,
+  restPose,
+} from '../lib/robot-arm';
 
 interface Props {
   figure?: string;
@@ -7,7 +20,7 @@ interface Props {
 
 const { figure = '0' } = Astro.props;
 const f = armFrame(restPose());
-const { base, l1, l2 } = ARM;
+const { base, l1, l2, l3 } = ARM;
 const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
 ---
 
@@ -17,7 +30,7 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
     viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.width} ${VIEW.height}`}
     style={`aspect-ratio: ${VIEW.width} / ${VIEW.height}`}
     role="img"
-    aria-label="Line drawing of a two-joint robot arm on a pedestal, annotated with its joint angles."
+    aria-label="Line drawing of a three-joint robot arm on a pedestal with a movable box, annotated with its joint angles."
   >
     <g class="arm__construction">
       <path d={`M${base.x - REACH} ${base.y} A${REACH} ${REACH} 0 0 1 ${base.x + REACH} ${base.y}`} class="arm__envelope" />
@@ -25,6 +38,16 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
       <path d={hatches.map((x) => `M${x} ${GROUND_Y} l-8 8`).join(' ')} class="arm__hatch" />
       <path d={`M164 ${GROUND_Y} L170 ${base.y} H190 L196 ${GROUND_Y} Z`} class="arm__pedestal" />
     </g>
+
+    <rect
+      class="arm__box"
+      data-box
+      x={BOX_REST.x - BOX_HALF}
+      y={BOX_REST.y - BOX_HALF}
+      width={BOX_SIZE}
+      height={BOX_SIZE}
+      rx="1.5"
+    />
 
     <g class="arm__annotations">
       <path d={`M${base.x} ${base.y} H${base.x + 40}`} class="arm__reference" />
@@ -47,14 +70,20 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
         <g data-link="2" transform={f.link2}>
           <rect x="-7" y="-7" width={l2 + 14} height="14" rx="7" class="arm__link" />
           <path d={`M0 0 H${l2}`} class="arm__centerline" />
-          <g transform={`translate(${l2} 0)`} class="arm__gripper">
-            <rect x="-2" y="-10" width="4" height="20" rx="1" class="arm__palm" />
-            <g data-jaw="upper" transform={jawTransform(JAW_OPEN, -1)}>
-              <path d="M2 -2 H14 L18 1.5" />
+          <g data-link="3" transform={f.link3}>
+            <rect x="-5" y="-5" width={l3 + 10} height="10" rx="5" class="arm__link" />
+            <path d={`M0 0 H${l3}`} class="arm__centerline" />
+            <g transform={`translate(${l3} 0)`} class="arm__gripper">
+              <rect x="-2" y="-10" width="4" height="20" rx="1" class="arm__palm" />
+              <g data-jaw="upper" transform={jawTransform(JAW_OPEN, -1)}>
+                <path d="M2 -2 H14 L18 1.5" />
+              </g>
+              <g data-jaw="lower" transform={jawTransform(JAW_OPEN, 1)}>
+                <path d="M2 2 H14 L18 -1.5" />
+              </g>
             </g>
-            <g data-jaw="lower" transform={jawTransform(JAW_OPEN, 1)}>
-              <path d="M2 2 H14 L18 -1.5" />
-            </g>
+            <circle r="4" class="arm__joint" />
+            <circle r="1.4" class="arm__pin" />
           </g>
           <circle r="5" class="arm__joint" />
           <circle r="1.6" class="arm__pin" />
@@ -66,10 +95,7 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
   </svg>
 
   <figcaption class="figure__caption">
-    Fig. {figure} — Two-link arm, analytic inverse kinematics.
-    <span class="arm__hint arm__hint--pointer">Move your cursor; the arm tracks it.</span>
-    <span class="arm__hint arm__hint--touch">Tap or drag to move the arm.</span>
-    <span class="arm__hint arm__hint--reduced">Click or tap to place a target.</span>
+    Fig. {figure} — IK arm solver.
     <span class="arm__readout" aria-hidden="true" data-readout>{f.readout}</span>
   </figcaption>
 </figure>
@@ -110,6 +136,12 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
 
   .arm__pedestal {
     fill: var(--color-bg);
+    stroke: var(--color-text);
+    stroke-width: 1.25;
+  }
+
+  .arm__box {
+    fill: var(--color-surface);
     stroke: var(--color-text);
     stroke-width: 1.25;
   }
@@ -174,41 +206,11 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
     fill: var(--color-text);
   }
 
-  .arm__hint,
   .arm__readout {
     display: block;
-  }
-
-  .arm__readout {
     margin-top: var(--space-1);
     color: var(--color-accent);
     font-variant-numeric: tabular-nums;
-  }
-
-  /* Hints only make sense once the script is running. */
-  .arm:not([data-ready]) .arm__hint,
-  .arm__hint--touch,
-  .arm__hint--reduced {
-    display: none;
-  }
-
-  @media (hover: none) {
-    .arm[data-ready] .arm__hint--pointer {
-      display: none;
-    }
-    .arm[data-ready] .arm__hint--touch {
-      display: block;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .arm[data-ready] .arm__hint--pointer,
-    .arm[data-ready] .arm__hint--touch {
-      display: none;
-    }
-    .arm[data-ready] .arm__hint--reduced {
-      display: block;
-    }
   }
 </style>
 
@@ -216,29 +218,46 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
   import { approachAngle, chooseElbow, solveIK, type Elbow, type Point, type Pose } from '../lib/ik';
   import {
     ARM,
+    BOX_BOUNCE,
+    BOX_FRICTION,
+    BOX_G,
+    BOX_HALF,
+    BOX_REST,
+    GROUND_Y,
     IDLE_WAYPOINTS,
     JAW_CLOSED,
     JAW_OPEN,
     REST_ELBOW,
-    REST_TARGET,
+    VIEW,
     armFrame,
+    boxNearTip,
     constrainTarget,
     isInView,
     jawTransform,
     restPose,
+    tipOf,
   } from '../lib/robot-arm';
 
   const IDLE_STEP_MS = 2800;
   const IDLE_PAUSE_MS = 8000;
-  const GRASP_MS = 380;
+  const GRASP_MS = 420;
 
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
+
+  interface BoxState {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    held: boolean;
+  }
 
   function mount(root: HTMLElement) {
     const svg = root.querySelector('svg')!;
     const link1 = root.querySelector<SVGGElement>('[data-link="1"]')!;
     const link2 = root.querySelector<SVGGElement>('[data-link="2"]')!;
+    const link3 = root.querySelector<SVGGElement>('[data-link="3"]')!;
     const arc1 = root.querySelector<SVGPathElement>('[data-arc="1"]')!;
     const arc2 = root.querySelector<SVGPathElement>('[data-arc="2"]')!;
     const label1 = root.querySelector<SVGTextElement>('[data-label="1"]')!;
@@ -246,6 +265,7 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
     const jawUpper = root.querySelector<SVGGElement>('[data-jaw="upper"]')!;
     const jawLower = root.querySelector<SVGGElement>('[data-jaw="lower"]')!;
     const crosshair = root.querySelector<SVGGElement>('[data-crosshair]')!;
+    const boxEl = root.querySelector<SVGRectElement>('[data-box]')!;
     const readout = root.querySelector<HTMLElement>('[data-readout]')!;
 
     let pose: Pose = restPose();
@@ -261,13 +281,22 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
     let idleIndex = 0;
     let idleTimer = 0;
     let inViewport = false;
+    let graspUntil = 0;
+
+    const box: BoxState = { x: BOX_REST.x, y: BOX_REST.y, vx: 0, vy: 0, held: false };
 
     const animated = () => !reducedMotion.matches;
+
+    function renderBox() {
+      boxEl.setAttribute('x', String(box.x - BOX_HALF));
+      boxEl.setAttribute('y', String(box.y - BOX_HALF));
+    }
 
     function render() {
       const f = armFrame(pose);
       link1.setAttribute('transform', f.link1);
       link2.setAttribute('transform', f.link2);
+      link3.setAttribute('transform', f.link3);
       arc1.setAttribute('d', f.arc1);
       arc2.setAttribute('d', f.arc2);
       label1.setAttribute('x', String(f.label1.x));
@@ -277,6 +306,53 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
       jawUpper.setAttribute('transform', jawTransform(jaw, -1));
       jawLower.setAttribute('transform', jawTransform(jaw, 1));
       readout.textContent = f.readout;
+      if (box.held) {
+        const tip = tipOf(pose);
+        box.x = tip.x;
+        box.y = tip.y;
+      }
+      renderBox();
+    }
+
+    function stepBox(dt: number) {
+      if (box.held) {
+        box.vx = 0;
+        box.vy = 0;
+        return true;
+      }
+
+      const floor = GROUND_Y - BOX_HALF;
+      const moving = Math.abs(box.vx) > 0.5 || Math.abs(box.vy) > 0.5 || box.y < floor - 0.5;
+      if (!moving) {
+        box.vx = 0;
+        box.vy = 0;
+        box.y = floor;
+        return false;
+      }
+
+      box.vy += BOX_G * dt;
+      box.x += box.vx * dt;
+      box.y += box.vy * dt;
+
+      const minX = VIEW.x + BOX_HALF;
+      const maxX = VIEW.x + VIEW.width - BOX_HALF;
+      if (box.x < minX) {
+        box.x = minX;
+        box.vx = 0;
+      } else if (box.x > maxX) {
+        box.x = maxX;
+        box.vx = 0;
+      }
+
+      if (box.y >= floor) {
+        box.y = floor;
+        if (Math.abs(box.vy) < 40) box.vy = 0;
+        else box.vy *= -BOX_BOUNCE;
+        box.vx *= Math.exp(-BOX_FRICTION * dt);
+        if (Math.abs(box.vx) < 2) box.vx = 0;
+      }
+
+      return true;
     }
 
     function tick(time: number) {
@@ -286,13 +362,19 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
       pose = {
         theta1: approachAngle(pose.theta1, goal.theta1, dt, 9),
         theta2: pose.theta2 + (goal.theta2 - pose.theta2) * (1 - Math.exp(-9 * dt)),
+        theta3: approachAngle(pose.theta3, goal.theta3, dt, 9),
       };
       jaw += (jawGoal - jaw) * (1 - Math.exp(-18 * dt));
+      const boxMoving = stepBox(dt);
       render();
 
-      const settled =
-        Math.abs(goal.theta1 - pose.theta1) + Math.abs(goal.theta2 - pose.theta2) < 1e-3 && Math.abs(jawGoal - jaw) < 0.02;
-      if (settled) {
+      const armSettled =
+        Math.abs(goal.theta1 - pose.theta1) +
+          Math.abs(goal.theta2 - pose.theta2) +
+          Math.abs(goal.theta3 - pose.theta3) <
+          1e-3 && Math.abs(jawGoal - jaw) < 0.02;
+
+      if (armSettled && !boxMoving) {
         pose = { ...goal };
         jaw = jawGoal;
         render();
@@ -307,6 +389,15 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
       if (!animated()) {
         pose = { ...goal };
         jaw = jawGoal;
+        if (box.held) {
+          const tip = tipOf(pose);
+          box.x = tip.x;
+          box.y = tip.y;
+        } else {
+          box.y = Math.min(box.y, GROUND_Y - BOX_HALF);
+          box.vy = 0;
+          box.vx = 0;
+        }
         render();
         return;
       }
@@ -326,16 +417,34 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
       update();
     }
 
-    function rest() {
-      setTarget(REST_TARGET, false);
+    function tryPickOrPlace(at?: Point) {
+      if (box.held) {
+        box.held = false;
+        box.vx = 0;
+        box.vy = 0;
+        update();
+        return;
+      }
+      const tip = tipOf(pose);
+      const near = boxNearTip(box, tip) || (at ? boxNearTip(box, at) : false);
+      if (near) {
+        box.held = true;
+        box.vx = 0;
+        box.vy = 0;
+        update();
+      }
     }
 
-    function grasp() {
+    function grasp(at?: Point) {
       jawGoal = JAW_CLOSED;
+      graspUntil = performance.now() + GRASP_MS;
+      tryPickOrPlace(at);
       update();
       window.setTimeout(() => {
-        jawGoal = JAW_OPEN;
-        update();
+        if (performance.now() >= graspUntil - 16) {
+          jawGoal = JAW_OPEN;
+          update();
+        }
       }, GRASP_MS);
     }
 
@@ -351,7 +460,7 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
       return toLocal(r.left + r.width / 2, r.top + r.height / 2);
     }
 
-    // Desktop: track the mouse anywhere on the page.
+    // Desktop: track the mouse anywhere on the page. Leaving the window keeps the last pose.
     window.addEventListener(
       'pointermove',
       (e) => {
@@ -361,10 +470,6 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
       },
       { passive: true },
     );
-
-    document.documentElement.addEventListener('mouseleave', () => {
-      if (animated() && !reaching) rest();
-    });
 
     // Reach for links on hover or keyboard focus.
     for (const el of document.querySelectorAll('[data-reach]')) {
@@ -388,23 +493,22 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
       el.addEventListener('blur', () => {
         if (!reaching) return;
         release();
-        if (animated()) rest();
       });
     }
 
-    // Direct interaction inside the figure: click or tap to place a target, drag to steer.
+    // Click or tap: steer to that point and grasp (pick/place the box if near).
     svg.addEventListener('pointerdown', (e) => {
       const p = toLocal(e.clientX, e.clientY);
       if (!p) return;
       setTarget(p);
-      grasp();
+      grasp(p);
       if (e.pointerType === 'touch') {
         lastTouch = performance.now();
         dragPointer = e.pointerId;
         try {
           svg.setPointerCapture(e.pointerId);
         } catch {
-          // Capture can fail if the pointer is already gone; dragging just stops at the figure edge.
+          // Capture can fail if the pointer is already gone.
         }
       }
     });
@@ -422,9 +526,8 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
     svg.addEventListener('pointerup', endDrag);
     svg.addEventListener('pointercancel', endDrag);
 
-    // Touch devices have no hover, so the arm idles through a few waypoints while visible.
     function idleStep() {
-      if (dragPointer !== null || performance.now() - lastTouch < IDLE_PAUSE_MS) return;
+      if (dragPointer !== null || performance.now() - lastTouch < IDLE_PAUSE_MS || box.held) return;
       idleIndex = (idleIndex + 1) % IDLE_WAYPOINTS.length;
       setTarget(IDLE_WAYPOINTS[idleIndex]);
     }
@@ -445,10 +548,7 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
     }).observe(root);
     document.addEventListener('visibilitychange', syncIdle);
     finePointer.addEventListener('change', syncIdle);
-    reducedMotion.addEventListener('change', () => {
-      syncIdle();
-      rest();
-    });
+    reducedMotion.addEventListener('change', syncIdle);
 
     root.setAttribute('data-ready', '');
   }

@@ -1,7 +1,7 @@
 /**
- * Planar two-link arm kinematics in SVG coordinates (x right, y down).
- * `theta1` is the absolute angle of the first link; `theta2` is the elbow
- * angle relative to the first link. Angles are in radians.
+ * Planar arm kinematics in SVG coordinates (x right, y down).
+ * `theta1` is the absolute angle of the first link; `theta2` and `theta3`
+ * are relative to the previous link. Angles are in radians.
  */
 
 export interface Point {
@@ -13,11 +13,14 @@ export interface ArmGeometry {
   base: Point;
   l1: number;
   l2: number;
+  /** Wrist / gripper offset beyond the elbow link. */
+  l3: number;
 }
 
 export interface Pose {
   theta1: number;
   theta2: number;
+  theta3: number;
 }
 
 /** +1 bends the elbow clockwise on screen, -1 counter-clockwise. */
@@ -28,11 +31,10 @@ const TAU = Math.PI * 2;
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 /**
- * Analytic inverse kinematics. Targets outside the workspace are clamped to
- * the reachable annulus, so the arm points toward far-away targets instead of
- * failing. `maxReach` < 1 keeps a slight bend at full extension.
+ * Analytic two-link inverse kinematics for the shoulder–elbow segment.
+ * Targets outside the workspace are clamped to the reachable annulus.
  */
-export function solveIK(target: Point, arm: ArmGeometry, elbow: Elbow, maxReach = 0.97): Pose {
+export function solveIK2(target: Point, arm: Pick<ArmGeometry, 'base' | 'l1' | 'l2'>, elbow: Elbow, maxReach = 0.97): Omit<Pose, 'theta3'> {
   const dx = target.x - arm.base.x;
   const dy = target.y - arm.base.y;
   const min = Math.abs(arm.l1 - arm.l2) + 1e-3;
@@ -45,25 +47,52 @@ export function solveIK(target: Point, arm: ArmGeometry, elbow: Elbow, maxReach 
   return { theta1: wrap(theta1), theta2 };
 }
 
-export function forwardKinematics(pose: Pose, arm: ArmGeometry): { elbow: Point; tip: Point; tipAngle: number } {
+/**
+ * Three-link IK: aim the tip at `target`, back the wrist joint off by `l3`
+ * along the approach heading, then solve the two-link arm to that wrist point.
+ */
+export function solveIK(target: Point, arm: ArmGeometry, elbow: Elbow, maxReach = 0.97): Pose {
+  const dx = target.x - arm.base.x;
+  const dy = target.y - arm.base.y;
+  const heading = Math.atan2(dy, dx);
+  const wrist = {
+    x: target.x - arm.l3 * Math.cos(heading),
+    y: target.y - arm.l3 * Math.sin(heading),
+  };
+  const { theta1, theta2 } = solveIK2(wrist, arm, elbow, maxReach);
+  const theta3 = wrap(heading - (theta1 + theta2));
+  return { theta1, theta2, theta3 };
+}
+
+/** @deprecated Use solveIK; kept name alias for clarity at call sites. */
+export const solveIK3 = solveIK;
+
+export function forwardKinematics(
+  pose: Pose,
+  arm: ArmGeometry,
+): { elbow: Point; wrist: Point; tip: Point; tipAngle: number } {
   const elbow = {
     x: arm.base.x + arm.l1 * Math.cos(pose.theta1),
     y: arm.base.y + arm.l1 * Math.sin(pose.theta1),
   };
-  const tipAngle = pose.theta1 + pose.theta2;
-  const tip = {
-    x: elbow.x + arm.l2 * Math.cos(tipAngle),
-    y: elbow.y + arm.l2 * Math.sin(tipAngle),
+  const mid = pose.theta1 + pose.theta2;
+  const wrist = {
+    x: elbow.x + arm.l2 * Math.cos(mid),
+    y: elbow.y + arm.l2 * Math.sin(mid),
   };
-  return { elbow, tip, tipAngle };
+  const tipAngle = mid + pose.theta3;
+  const tip = {
+    x: wrist.x + arm.l3 * Math.cos(tipAngle),
+    y: wrist.y + arm.l3 * Math.sin(tipAngle),
+  };
+  return { elbow, wrist, tip, tipAngle };
 }
 
 /**
- * Picks the elbow configuration that keeps the elbow above the arm, with a
- * hysteresis band around vertical so it doesn't flicker when the target sits
- * directly above the base.
+ * Picks the elbow configuration with a wide hysteresis band so the wrist
+ * absorbs heading changes instead of flipping the elbow.
  */
-export function chooseElbow(target: Point, arm: ArmGeometry, current: Elbow, band = 16): Elbow {
+export function chooseElbow(target: Point, arm: ArmGeometry, current: Elbow, band = 48): Elbow {
   const dx = target.x - arm.base.x;
   if (dx > band) return 1;
   if (dx < -band) return -1;
