@@ -1,5 +1,4 @@
 ---
-import SocialLinks from './SocialLinks.astro';
 import { nav, site } from '../site.config';
 import { withBase } from '../lib/url';
 
@@ -34,7 +33,6 @@ const isCurrent = (href: string) => {
           ))
         }
       </ul>
-      <SocialLinks variant="icons" class="site-nav__social" />
     </nav>
   </div>
 </header>
@@ -94,9 +92,5 @@ const isCurrent = (href: string) => {
     text-decoration-color: var(--color-accent);
     text-decoration-thickness: 1px;
     text-underline-offset: 0.4em;
-  }
-
-  .site-nav :global(.site-nav__social) {
-    margin-right: calc(-1 * var(--space-2));
   }
 </style>

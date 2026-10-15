@@ -16,4 +16,8 @@ export interface NavItem {
   newTab?: boolean;
 }
 
-export const nav: NavItem[] = [{ label: 'Résumé', href: site.resume, newTab: true }];
+export const nav: NavItem[] = [
+  { label: 'Work', href: '/work/' },
+  { label: 'About', href: '/about/' },
+  { label: 'Résumé', href: site.resume, newTab: true },
+];

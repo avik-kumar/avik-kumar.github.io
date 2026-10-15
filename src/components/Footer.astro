@@ -1,6 +1,5 @@
 ---
 import { site } from '../site.config';
-import { withBase } from '../lib/url';
 
 const year = new Date().getFullYear();
 ---
@@ -12,11 +11,6 @@ const year = new Date().getFullYear();
       <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
       <li><a href={site.github} rel="me noopener" target="_blank">GitHub</a></li>
       <li><a href={site.linkedin} rel="me noopener" target="_blank">LinkedIn</a></li>
-      <li>
-        <a href={withBase(site.resume)} target="_blank" rel="noopener">
-          Résumé<span class="visually-hidden"> (PDF, opens in a new tab)</span>
-        </a>
-      </li>
     </ul>
   </div>
 </footer>

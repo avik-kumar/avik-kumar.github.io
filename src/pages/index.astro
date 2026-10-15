@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import SocialLinks from '../components/SocialLinks.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import RobotArm from '../components/RobotArm.astro';
 import { site } from '../site.config';
@@ -9,7 +8,7 @@ import { withBase } from '../lib/url';
 const now = [
   { role: 'Robotics & RL Research Assistant', org: 'Ha Lab, Georgia Tech', since: 'Since Jan 2026' },
   { role: 'SMT Solver Research Assistant', org: 'ML for Logic @ Georgia Tech', since: 'Since Nov 2025' },
-  { role: 'Data Subteam Lead', org: 'Georgia Tech Solar Racing', since: 'Member since Aug 2025' },
+  { role: 'Data Subteam Lead', org: 'Georgia Tech Solar Racing', since: 'Lead since Aug 2026' },
   { role: 'B.S. Computer Science', org: 'Intelligence · Modeling & Simulation', since: 'Expected May 2028' },
 ];
 ---
@@ -27,10 +26,10 @@ const now = [
         solver, and lead the data and software team at Georgia Tech Solar Racing.
       </p>
       <div class="hero__actions">
-        <a class="button button--primary" href={withBase(site.resume)} target="_blank" rel="noopener" data-reach>
+        <a class="button button--primary" href={withBase('/work/')} data-reach>View work</a>
+        <a class="link-underline" href={withBase(site.resume)} target="_blank" rel="noopener" data-reach>
           Résumé ↗<span class="visually-hidden"> (PDF, opens in a new tab)</span>
         </a>
-        <SocialLinks variant="text" />
       </div>
     </div>
 
@@ -52,7 +51,6 @@ const now = [
         ))
       }
     </ul>
-    <p class="now__location meta">Based in {site.location}</p>
   </section>
 </BaseLayout>
 
@@ -140,9 +138,5 @@ const now = [
     .now__since {
       text-align: right;
     }
-  }
-
-  .now__location {
-    margin-top: var(--space-4);
   }
 </style>
