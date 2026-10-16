@@ -2,7 +2,7 @@ import { forwardKinematics, solveIK, type ArmGeometry, type Elbow, type Point, t
 
 /** Shared by the build-time render and the client script so both draw the same arm. */
 export const VIEW = { x: 0, y: 50, width: 360, height: 222 };
-export const ARM: ArmGeometry = { base: { x: 180, y: 236 }, l1: 88, l2: 68, l3: 28 };
+export const ARM: ArmGeometry = { base: { x: 180, y: 228 }, l1: 70, l2: 76, l3: 34 };
 export const GROUND_Y = 250;
 export const REACH = (ARM.l1 + ARM.l2 + ARM.l3) * 0.97;
 export const REST_TARGET: Point = { x: 250, y: 118 };
@@ -28,9 +28,11 @@ export const IDLE_WAYPOINTS: Point[] = [
   { x: 286, y: 178 },
 ];
 
-/** Keeps targets above the base so the arm never reaches into the ground. */
+/** Lowest aim point: just above the ground line, so the gripper can meet the box. */
+export const TARGET_FLOOR = GROUND_Y - 4;
+
 export function constrainTarget(p: Point): Point {
-  return { x: p.x, y: Math.min(p.y, ARM.base.y - 14) };
+  return { x: p.x, y: Math.min(p.y, TARGET_FLOOR) };
 }
 
 export function isInView(p: Point): boolean {

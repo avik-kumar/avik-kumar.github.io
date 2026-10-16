@@ -215,7 +215,7 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
 </style>
 
 <script>
-  import { approachAngle, chooseElbow, solveIK, type Elbow, type Point, type Pose } from '../lib/ik';
+  import { approachAngle, solveIK, type Point, type Pose } from '../lib/ik';
   import {
     ARM,
     BOX_BOUNCE,
@@ -228,6 +228,7 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
     JAW_CLOSED,
     JAW_OPEN,
     REST_ELBOW,
+    REST_TARGET,
     VIEW,
     armFrame,
     boxNearTip,
@@ -270,7 +271,9 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
 
     let pose: Pose = restPose();
     let goal: Pose = { ...pose };
-    let elbow: Elbow = REST_ELBOW;
+    let aim: Point = { ...REST_TARGET };
+    let aimGoal: Point = { ...REST_TARGET };
+    let heading = Math.atan2(REST_TARGET.y - ARM.base.y, REST_TARGET.x - ARM.base.x);
     let jaw = JAW_OPEN;
     let jawGoal = JAW_OPEN;
     let frameId = 0;
@@ -355,10 +358,23 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
       return true;
     }
 
+    function followAim(dt: number) {
+      const t = 1 - Math.exp(-10 * dt);
+      aim = {
+        x: aim.x + (aimGoal.x - aim.x) * t,
+        y: aim.y + (aimGoal.y - aim.y) * t,
+      };
+      const dx = aim.x - ARM.base.x;
+      const dy = aim.y - ARM.base.y;
+      if (Math.hypot(dx, dy) >= 28) heading = Math.atan2(dy, dx);
+      goal = solveIK(aim, ARM, REST_ELBOW, heading);
+    }
+
     function tick(time: number) {
       const dt = lastTime ? Math.min((time - lastTime) / 1000, 0.05) : 1 / 60;
       lastTime = time;
 
+      followAim(dt);
       pose = {
         theta1: approachAngle(pose.theta1, goal.theta1, dt, 9),
         theta2: pose.theta2 + (goal.theta2 - pose.theta2) * (1 - Math.exp(-9 * dt)),
@@ -368,11 +384,14 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
       const boxMoving = stepBox(dt);
       render();
 
+      const aimSettled = Math.hypot(aimGoal.x - aim.x, aimGoal.y - aim.y) < 0.4;
       const armSettled =
+        aimSettled &&
         Math.abs(goal.theta1 - pose.theta1) +
           Math.abs(goal.theta2 - pose.theta2) +
           Math.abs(goal.theta3 - pose.theta3) <
-          1e-3 && Math.abs(jawGoal - jaw) < 0.02;
+          1e-3 &&
+        Math.abs(jawGoal - jaw) < 0.02;
 
       if (armSettled && !boxMoving) {
         pose = { ...goal };
@@ -387,6 +406,11 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
 
     function update() {
       if (!animated()) {
+        aim = { ...aimGoal };
+        const dx = aim.x - ARM.base.x;
+        const dy = aim.y - ARM.base.y;
+        if (Math.hypot(dx, dy) >= 28) heading = Math.atan2(dy, dx);
+        goal = solveIK(aim, ARM, REST_ELBOW, heading);
         pose = { ...goal };
         jaw = jawGoal;
         if (box.held) {
@@ -406,8 +430,7 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
 
     function setTarget(raw: Point, showCrosshair = true) {
       const target = constrainTarget(raw);
-      elbow = chooseElbow(target, ARM, elbow);
-      goal = solveIK(target, ARM, elbow);
+      aimGoal = target;
       if (showCrosshair && isInView(raw)) {
         crosshair.setAttribute('transform', `translate(${target.x} ${target.y})`);
         crosshair.setAttribute('visibility', 'visible');
@@ -417,7 +440,7 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
       update();
     }
 
-    function tryPickOrPlace(at?: Point) {
+    function tryPickOrPlace() {
       if (box.held) {
         box.held = false;
         box.vx = 0;
@@ -425,9 +448,7 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
         update();
         return;
       }
-      const tip = tipOf(pose);
-      const near = boxNearTip(box, tip) || (at ? boxNearTip(box, at) : false);
-      if (near) {
+      if (boxNearTip(box, tipOf(pose))) {
         box.held = true;
         box.vx = 0;
         box.vy = 0;
@@ -435,10 +456,10 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
       }
     }
 
-    function grasp(at?: Point) {
+    function grasp() {
       jawGoal = JAW_CLOSED;
       graspUntil = performance.now() + GRASP_MS;
-      tryPickOrPlace(at);
+      tryPickOrPlace();
       update();
       window.setTimeout(() => {
         if (performance.now() >= graspUntil - 16) {
@@ -501,7 +522,7 @@ const hatches = Array.from({ length: 23 }, (_, i) => 70 + i * 10);
       const p = toLocal(e.clientX, e.clientY);
       if (!p) return;
       setTarget(p);
-      grasp(p);
+      grasp();
       if (e.pointerType === 'touch') {
         lastTouch = performance.now();
         dragPointer = e.pointerId;

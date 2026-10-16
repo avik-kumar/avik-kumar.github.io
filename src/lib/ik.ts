@@ -47,17 +47,29 @@ export function solveIK2(target: Point, arm: Pick<ArmGeometry, 'base' | 'l1' | '
   return { theta1: wrap(theta1), theta2 };
 }
 
+/** Inside this distance from the shoulder, keep the previous heading so the wrist does not flip. */
+export const HEADING_DEADZONE = 28;
+
 /**
- * Three-link IK: aim the tip at `target`, back the wrist joint off by `l3`
- * along the approach heading, then solve the two-link arm to that wrist point.
+ * Three-link IK. The target is projected onto the reachable arc first, then the
+ * wrist is backed off by `l3` along that same heading so the gripper and the
+ * arm agree at full stretch. Near the shoulder, `prevHeading` is kept.
  */
-export function solveIK(target: Point, arm: ArmGeometry, elbow: Elbow, maxReach = 0.97): Pose {
+export function solveIK(target: Point, arm: ArmGeometry, elbow: Elbow, prevHeading = 0, maxReach = 0.97): Pose {
   const dx = target.x - arm.base.x;
   const dy = target.y - arm.base.y;
-  const heading = Math.atan2(dy, dx);
+  const dist = Math.hypot(dx, dy);
+  const heading = dist < HEADING_DEADZONE ? prevHeading : Math.atan2(dy, dx);
+  const max = (arm.l1 + arm.l2 + arm.l3) * maxReach;
+  const min = Math.abs(arm.l1 - arm.l2) + arm.l3 * 0.35;
+  const d = clamp(dist < 1e-4 ? min : dist, min, max);
+  const tip = {
+    x: arm.base.x + Math.cos(heading) * d,
+    y: arm.base.y + Math.sin(heading) * d,
+  };
   const wrist = {
-    x: target.x - arm.l3 * Math.cos(heading),
-    y: target.y - arm.l3 * Math.sin(heading),
+    x: tip.x - arm.l3 * Math.cos(heading),
+    y: tip.y - arm.l3 * Math.sin(heading),
   };
   const { theta1, theta2 } = solveIK2(wrist, arm, elbow, maxReach);
   const theta3 = wrap(heading - (theta1 + theta2));
