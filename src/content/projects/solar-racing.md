@@ -1,5 +1,5 @@
 ---
-title: Georgia Tech Solar Racing — Data and Software Systems
+title: Solar Racing
 summary: Leading the software team behind the solar car's real-time telemetry, vehicle simulation, and race-strategy tooling.
 categories: [simulation-data, software-engineering]
 role: Data Subteam Lead

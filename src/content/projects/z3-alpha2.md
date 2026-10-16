@@ -1,5 +1,5 @@
 ---
-title: Z3-alpha2 — Learning-Guided SMT Strategy Search
+title: Z3-alpha2
 summary: Research on Monte Carlo Tree Search with LLM priors for Z3, competing as Z3-alpha2 at SMT-COMP 2026.
 categories: [formal-methods, machine-learning]
 role: SMT Solver Research Assistant

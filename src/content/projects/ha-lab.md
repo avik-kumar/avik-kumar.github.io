@@ -1,5 +1,5 @@
 ---
-title: Ha Lab — Teleoperation and Data Infrastructure for Humanoids
+title: Humanoid Teleoperation
 summary: Building teleoperation and data-collection infrastructure for flow-matching policies on the Unitree G1 humanoid.
 categories: [robotics, machine-learning]
 role: Robotics & RL Research Assistant

@@ -261,6 +261,29 @@ hr {
   font-variant-numeric: tabular-nums;
 }
 
+.meta--accent {
+  color: var(--color-accent);
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pills li {
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+}
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -345,7 +368,16 @@ hr {
 
 .prose h2 {
   margin-top: 2.2em;
-  font-size: 1.625rem;
+  font-size: 1.375rem;
+}
+
+.prose h2::after {
+  content: '';
+  display: block;
+  width: 2.5rem;
+  height: 1px;
+  margin-top: 0.45rem;
+  background: var(--color-accent);
 }
 
 .prose h3 {
@@ -368,7 +400,7 @@ hr {
 }
 
 .prose li::marker {
-  color: var(--color-text-subtle);
+  color: var(--color-accent);
 }
 
 .prose strong {

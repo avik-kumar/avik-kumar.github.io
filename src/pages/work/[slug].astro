@@ -15,7 +15,7 @@ export async function getStaticPaths() {
 
 const { project } = Astro.props;
 const { Content } = await render(project);
-const { title, summary, role, organization, startDate, endDate, categories, technologies, links } = project.data;
+const { title, summary, role, organization, startDate, endDate, categories, technologies, links, wip } = project.data;
 const primary = categories[0];
 ---
 
@@ -23,31 +23,26 @@ const primary = categories[0];
   <article class="container page">
     <p class="meta">
       <a class="page__back" href={withBase('/work/')}>Work</a>
-      <span aria-hidden="true"> / </span>
-      {PROJECT_CATEGORIES[primary]}
     </p>
 
     <header class="project-header">
+      <p class="project-header__kicker">
+        <span class="meta meta--accent">{PROJECT_CATEGORIES[primary]}</span>
+        {wip && <span class="meta">In progress</span>}
+      </p>
       <h1 class="project-header__title">{title}</h1>
       <p class="project-header__summary">{summary}</p>
-      <dl class="project-header__facts">
-        <div>
-          <dt class="visually-hidden">Role</dt>
-          <dd>{[role, organization].filter(Boolean).join(', ')}</dd>
-        </div>
-        <div>
-          <dt class="visually-hidden">Dates</dt>
-          <dd class="meta">{formatDateRange(startDate, endDate)}</dd>
-        </div>
-        {
-          technologies.length > 0 && (
-            <div>
-              <dt class="visually-hidden">Technologies</dt>
-              <dd class="meta">{technologies.join(' · ')}</dd>
-            </div>
-          )
-        }
-      </dl>
+      <p class="project-header__role">{[role, organization].filter(Boolean).join(', ')}</p>
+      <p class="meta">{formatDateRange(startDate, endDate)}</p>
+      {
+        technologies.length > 0 && (
+          <ul class="pills project-header__pills">
+            {technologies.map((tech) => (
+              <li>{tech}</li>
+            ))}
+          </ul>
+        )
+      }
       {
         links.length > 0 && (
           <ul class="project-header__links">
@@ -89,9 +84,15 @@ const primary = categories[0];
     border-bottom: 1px solid var(--color-text);
   }
 
+  .project-header__kicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+
   .project-header__title {
-    font-size: var(--text-3xl);
-    max-width: 22ch;
+    font-size: 2rem;
   }
 
   .project-header__summary {
@@ -102,14 +103,18 @@ const primary = categories[0];
     color: var(--color-text-muted);
   }
 
-  .project-header__facts {
-    display: grid;
-    gap: var(--space-2);
-    margin: var(--space-5) 0 0;
+  .project-header__role {
+    margin-top: var(--space-4);
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
   }
 
-  .project-header__facts dd {
-    margin: 0;
+  .project-header .meta {
+    margin-top: var(--space-2);
+  }
+
+  .project-header__pills {
+    margin-top: var(--space-4);
   }
 
   .project-header__links {

@@ -12,7 +12,7 @@ const { n, title, level = 2, id } = Astro.props;
 const Heading = `h${level}` as 'h2' | 'h3';
 ---
 
-<div class="section-heading">
+<div class:list={['section-heading', { 'section-heading--small': level === 3 }]}>
   <span class="section-heading__n" aria-hidden="true">§{n}</span>
   <Heading class="section-heading__title" id={id}>{title}</Heading>
 </div>
@@ -35,5 +35,9 @@ const Heading = `h${level}` as 'h2' | 'h3';
 
   .section-heading__title {
     font-size: 1.5rem;
+  }
+
+  .section-heading--small .section-heading__title {
+    font-size: 1.25rem;
   }
 </style>

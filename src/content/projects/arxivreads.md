@@ -7,12 +7,11 @@ startDate: 2026-02
 status: active
 technologies: [Python, Django, OpenAlex]
 featured: false
+wip: true
 order: 4
 draft: false
 ---
 
 ## Overview
 
-ArxivReads is a work-in-progress tool for finding and organizing research papers. It uses Python and Django on the backend, with OpenAlex for scholarly metadata.
-
-The project is still under active development; a public repository will be linked here when one is ready.
+ArxivReads is a tool for finding and organizing research papers. It uses Python and Django on the backend, with OpenAlex for scholarly metadata.

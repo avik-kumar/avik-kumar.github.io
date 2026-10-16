@@ -24,6 +24,8 @@ const projects = defineCollection({
         technologies: z.array(z.string()).default([]),
         featured: z.boolean().default(false),
         research: z.boolean().default(false),
+        /** Shows an "In progress" mark. Independent tools without a public repo. */
+        wip: z.boolean().default(false),
         /** Lower numbers sort first. */
         order: z.number().default(100),
         image: image().optional(),

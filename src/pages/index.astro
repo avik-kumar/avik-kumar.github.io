@@ -2,15 +2,23 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import RobotArm from '../components/RobotArm.astro';
-import { site } from '../site.config';
+import { PROJECT_CATEGORIES } from '../lib/taxonomy';
 import { getProjects } from '../lib/projects';
 import { withBase } from '../lib/url';
 
 const now = [
-  { role: 'Robotics & RL Research Assistant', org: 'Ha Lab, Georgia Tech', since: 'Since Jan 2026' },
-  { role: 'SMT Solver Research Assistant', org: 'ML for Logic @ Georgia Tech', since: 'Since Nov 2025' },
-  { role: 'Data Subteam Lead', org: 'Georgia Tech Solar Racing', since: 'Lead since Aug 2026' },
-  { role: 'B.S. Computer Science', org: 'Intelligence · Modeling & Simulation', since: 'Expected May 2028' },
+  {
+    href: '/work/ha-lab/',
+    text: 'Teleoperation and data collection for flow-matching policies on a Unitree G1',
+  },
+  {
+    href: '/work/z3-alpha2/',
+    text: 'Learning-guided strategy search for Z3-alpha2',
+  },
+  {
+    href: '/work/solar-racing/',
+    text: 'Telemetry, simulation, and race software for Georgia Tech Solar Racing',
+  },
 ];
 
 const featured = (await getProjects()).filter((p) => p.data.featured).slice(0, 3);
@@ -30,9 +38,6 @@ const featured = (await getProjects()).filter((p) => p.data.featured).slice(0, 3
       </p>
       <div class="hero__actions">
         <a class="button button--primary" href={withBase('/work/')} data-reach>View work</a>
-        <a class="link-underline" href={withBase(site.resume)} target="_blank" rel="noopener" data-reach>
-          Résumé ↗<span class="visually-hidden"> (PDF, opens in a new tab)</span>
-        </a>
       </div>
     </div>
 
@@ -47,9 +52,9 @@ const featured = (await getProjects()).filter((p) => p.data.featured).slice(0, 3
       {
         now.map((item) => (
           <li class="now__item">
-            <span class="now__role">{item.role}</span>
-            <span class="now__org">{item.org}</span>
-            <span class="now__since meta">{item.since}</span>
+            <a class="now__link" href={withBase(item.href)}>
+              {item.text}
+            </a>
           </li>
         ))
       }
@@ -64,6 +69,7 @@ const featured = (await getProjects()).filter((p) => p.data.featured).slice(0, 3
           {featured.map((project) => (
             <li class="selected__item">
               <a class="selected__link" href={withBase(`/work/${project.id}/`)}>
+                <span class="meta meta--accent">{PROJECT_CATEGORIES[project.data.categories[0]]}</span>
                 <span class="selected__title">{project.data.title}</span>
                 <span class="selected__summary">{project.data.summary}</span>
               </a>
@@ -136,34 +142,21 @@ const featured = (await getProjects()).filter((p) => p.data.featured).slice(0, 3
   }
 
   .now__item {
-    display: grid;
-    gap: var(--space-1) var(--space-5);
-    padding-block: var(--space-4);
     border-bottom: 1px solid var(--color-border);
   }
 
-  @media (min-width: 48rem) {
-    .now__item {
-      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 11rem;
-      align-items: baseline;
-    }
-  }
-
-  .now__role {
+  .now__link {
+    display: block;
+    padding-block: var(--space-4);
     font-family: var(--font-serif);
-    font-size: 1.1875rem;
-    line-height: 1.3;
+    font-size: 1.25rem;
+    line-height: 1.35;
+    color: var(--color-text);
+    text-decoration: none;
   }
 
-  .now__org {
-    font-size: var(--text-sm);
-    color: var(--color-text-muted);
-  }
-
-  @media (min-width: 48rem) {
-    .now__since {
-      text-align: right;
-    }
+  .now__link:hover {
+    color: var(--color-accent);
   }
 
   .selected {
@@ -198,7 +191,7 @@ const featured = (await getProjects()).filter((p) => p.data.featured).slice(0, 3
 
   .selected__title {
     font-family: var(--font-serif);
-    font-size: 1.375rem;
+    font-size: 1.25rem;
     line-height: var(--leading-snug);
     transition: color var(--duration) var(--ease);
   }

@@ -25,15 +25,13 @@ const projects = await getProjects();
             return (
               <li class="work-list__item">
                 <a class="work-list__link" href={withBase(`/work/${project.id}/`)}>
+                  <span class="work-list__kicker">
+                    <span class="meta meta--accent">{PROJECT_CATEGORIES[primary]}</span>
+                    {project.data.wip && <span class="meta">In progress</span>}
+                  </span>
                   <span class="work-list__title">{project.data.title}</span>
                   <span class="work-list__summary">{project.data.summary}</span>
-                  <span class="work-list__meta meta">
-                    {[
-                      project.data.role,
-                      formatDateRange(project.data.startDate, project.data.endDate),
-                      PROJECT_CATEGORIES[primary],
-                    ].join(' · ')}
-                  </span>
+                  <span class="meta">{formatDateRange(project.data.startDate, project.data.endDate)}</span>
                 </a>
               </li>
             );
@@ -84,13 +82,19 @@ const projects = await getProjects();
     color: inherit;
   }
 
+  .work-list__kicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
   .work-list__link:hover .work-list__title {
     color: var(--color-accent);
   }
 
   .work-list__title {
     font-family: var(--font-serif);
-    font-size: var(--text-xl);
+    font-size: 1.25rem;
     line-height: var(--leading-snug);
     transition: color var(--duration) var(--ease);
   }
@@ -102,7 +106,4 @@ const projects = await getProjects();
     color: var(--color-text-muted);
   }
 
-  .work-list__meta {
-    margin-top: var(--space-1);
-  }
 </style>
